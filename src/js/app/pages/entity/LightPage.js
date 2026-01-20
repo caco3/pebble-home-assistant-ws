@@ -36,7 +36,7 @@ function showLightEntity(entity_id) {
 
     // Helper function to get light data
     function getLightData(light) {
-        let timeStr = humanDiff(new Date(), new Date(light.last_changed));
+        let timeStr = helpers.humanDiff(new Date(), new Date(light.last_changed));
 
         // Calculate brightness percentage if available
         let brightnessPerc = 0;
@@ -85,7 +85,7 @@ function showLightEntity(entity_id) {
 
     // Helper function to get supported features
     function supported_features(entity) {
-        let entity_registry = entity_registry_cache[entity.entity_id];
+        let entity_registry = appState.entity_registry_cache[entity.entity_id];
         // Light feature bitfield values from Home Assistant
         // Modern Home Assistant uses LightEntityFeature enum
         const LightEntityFeature = {

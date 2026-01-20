@@ -22,6 +22,8 @@ var menuSelections = {
 
 function showEntityMenu(entity_id) {
     var appState = AppState.getInstance();
+    var favoriteEntityStore = appState.favoriteEntityStore;
+    var pinnedEntityStore = appState.pinnedEntityStore;
     let entity = appState.ha_state_dict[entity_id];
     if(!entity){
         throw new Error(`Entity ${entity_id} not found in appState.ha_state_dict`);
