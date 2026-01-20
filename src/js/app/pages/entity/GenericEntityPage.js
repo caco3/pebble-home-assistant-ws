@@ -14,6 +14,7 @@ var BaseEntityPage = require('app/pages/entity/BaseEntityPage');
 var AppState = require('app/AppState');
 var EntityService = require('app/EntityService');
 var helpers = require('app/helpers');
+var RelativeTimeUpdater = require('app/RelativeTimeUpdater');
 
 // Menu selection tracking
 var menuSelections = {
@@ -25,8 +26,32 @@ function showEntityMenu(entity_id) {
     var favoriteEntityStore = appState.favoriteEntityStore;
     var pinnedEntityStore = appState.pinnedEntityStore;
     let entity = appState.ha_state_dict[entity_id];
+    let relativeTimeUpdater = null;
     if(!entity){
         throw new Error(`Entity ${entity_id} not found in appState.ha_state_dict`);
+    }
+
+    // Helper function to format date as Y-M-D HH:MM:SS
+    function formatDateTime(isoString) {
+        if (!isoString) return 'N/A';
+        var date = new Date(isoString);
+        var year = date.getFullYear();
+        var month = String(date.getMonth() + 1).padStart(2, '0');
+        var day = String(date.getDate()).padStart(2, '0');
+        var hours = String(date.getHours()).padStart(2, '0');
+        var minutes = String(date.getMinutes()).padStart(2, '0');
+        var seconds = String(date.getSeconds()).padStart(2, '0');
+        return year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds;
+    }
+
+    // Helper function to get state subtitle with relative time
+    function getStateSubtitle(entity) {
+        var stateText = entity.state;
+        if (entity.attributes.unit_of_measurement) {
+            stateText += ' ' + entity.attributes.unit_of_measurement;
+        }
+        var timeStr = helpers.humanDiff(new Date(), new Date(entity.last_changed));
+        return stateText + ' > ' + timeStr;
     }
 
     // Set Menu colors
@@ -74,15 +99,15 @@ function showEntityMenu(entity_id) {
     let stateIndex = i;
     showEntityMenu.item(0, i++, {
         title: 'State',
-        subtitle: entity.state + (entity.attributes.unit_of_measurement ? ` ${entity.attributes.unit_of_measurement}` : '')
+        subtitle: getStateSubtitle(entity)
     });
     showEntityMenu.item(0, i++, {
         title: 'Last Changed',
-        subtitle: entity.last_changed
+        subtitle: formatDateTime(entity.last_changed)
     });
     showEntityMenu.item(0, i++, {
         title: 'Last Updated',
-        subtitle: entity.last_updated
+        subtitle: formatDateTime(entity.last_updated)
     });
     showEntityMenu.item(0, i++, {
         title: 'Attributes',
@@ -540,6 +565,19 @@ function showEntityMenu(entity_id) {
     _renderPinnedBtn();
 
     showEntityMenu.on('show', function(){
+        // Create RelativeTimeUpdater for live time updates
+        relativeTimeUpdater = new RelativeTimeUpdater(function(id, lastChanged) {
+            // Get current entity and update the state field
+            let currentEntity = appState.ha_state_dict[entity_id];
+            if (currentEntity) {
+                showEntityMenu.item(0, stateIndex, {
+                    title: 'State',
+                    subtitle: getStateSubtitle(currentEntity)
+                });
+            }
+        });
+        relativeTimeUpdater.register(entity_id, entity.last_changed);
+
         msg_id = appState.haws.subscribeTrigger({
             "type": "subscribe_trigger",
             "trigger": {
@@ -547,12 +585,31 @@ function showEntityMenu(entity_id) {
                 "entity_id": entity.entity_id,
             },
         }, function(data) {
-            // helpers.log_message(`Entity update for ${entity.entity_id}`);
+            if (data.event && data.event.variables && data.event.variables.trigger && data.event.variables.trigger.to_state) {
+                let updatedEntity = data.event.variables.trigger.to_state;
+                appState.ha_state_dict[entity_id] = updatedEntity;
 
-            showEntityMenu.item(0, stateIndex, {
-                title: 'State',
-                subtitle: `${data.event.variables.trigger.to_state.state}` + (entity.attributes.unit_of_measurement ? ` ${entity.attributes.unit_of_measurement}` : '')
-            });
+                // Update state field with new state and relative time
+                showEntityMenu.item(0, stateIndex, {
+                    title: 'State',
+                    subtitle: getStateSubtitle(updatedEntity)
+                });
+
+                // Update last changed and last updated fields
+                showEntityMenu.item(0, stateIndex + 1, {
+                    title: 'Last Changed',
+                    subtitle: formatDateTime(updatedEntity.last_changed)
+                });
+                showEntityMenu.item(0, stateIndex + 2, {
+                    title: 'Last Updated',
+                    subtitle: formatDateTime(updatedEntity.last_updated)
+                });
+
+                // Update the RelativeTimeUpdater with the new timestamp
+                if (relativeTimeUpdater) {
+                    relativeTimeUpdater.update(entity_id, updatedEntity.last_changed);
+                }
+            }
         }, function(error) {
             helpers.log_message(`ENTITY UPDATE ERROR [${entity.entity_id}]: ` + JSON.stringify(error));
         });
@@ -560,6 +617,12 @@ function showEntityMenu(entity_id) {
     showEntityMenu.on('close', function(){
         if(msg_id) {
             appState.haws.unsubscribe(msg_id);
+        }
+
+        // Destroy the RelativeTimeUpdater
+        if (relativeTimeUpdater) {
+            relativeTimeUpdater.destroy();
+            relativeTimeUpdater = null;
         }
     });
 
