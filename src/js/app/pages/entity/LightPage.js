@@ -16,6 +16,7 @@ var Vibe = require('ui/vibe');
 var BaseEntityPage = require('app/pages/entity/BaseEntityPage');
 var AppState = require('app/AppState');
 var helpers = require('app/helpers');
+var RelativeTimeUpdater = require('app/RelativeTimeUpdater');
 
 // Menu selection tracking
 var menuSelections = {
@@ -27,7 +28,8 @@ var GenericEntityPage = require('app/pages/entity/GenericEntityPage');
 function showLightEntity(entity_id) {
     var appState = AppState.getInstance();
     let light = appState.ha_state_dict[entity_id],
-        subscription_msg_id = null;
+        subscription_msg_id = null,
+        relativeTimeUpdater = null;
     if (!light) {
         throw new Error(`Light entity ${entity_id} not found in appState.ha_state_dict`);
     }
@@ -1118,6 +1120,16 @@ function showLightEntity(entity_id) {
         // Update menu items
         updateLightMenuItems(light);
 
+        // Create RelativeTimeUpdater for live time updates
+        relativeTimeUpdater = new RelativeTimeUpdater(function(id, lastChanged) {
+            // Get current light and update the menu
+            let currentLight = appState.ha_state_dict[entity_id];
+            if (currentLight) {
+                updateLightMenuItems(currentLight);
+            }
+        });
+        relativeTimeUpdater.register(entity_id, light.last_changed);
+
         // Subscribe to entity updates
         subscription_msg_id = appState.haws.subscribeTrigger({
             "type": "subscribe_trigger",
@@ -1134,6 +1146,11 @@ function showLightEntity(entity_id) {
 
                 // Update the menu items directly without redrawing the entire menu
                 updateLightMenuItems(updatedLight);
+
+                // Update the RelativeTimeUpdater with the new timestamp
+                if (relativeTimeUpdater) {
+                    relativeTimeUpdater.update(entity_id, updatedLight.last_changed);
+                }
             }
         }, function(error) {
             helpers.log_message(`ENTITY UPDATE ERROR [${entity_id}]: ${JSON.stringify(error)}`);
@@ -1157,6 +1174,12 @@ function showLightEntity(entity_id) {
         // Unsubscribe from entity updates
         if (subscription_msg_id) {
             appState.haws.unsubscribe(subscription_msg_id);
+        }
+
+        // Destroy the RelativeTimeUpdater
+        if (relativeTimeUpdater) {
+            relativeTimeUpdater.destroy();
+            relativeTimeUpdater = null;
         }
     });
 
