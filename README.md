@@ -4,33 +4,26 @@ Control your Home Assistant smart home directly from your Pebble smartwatch! Thi
 
 Join our [Discord Discussion](#join-the-discussion) on the official [Rebble Discord](http://rebble.io/discord)
 
-![pebble-ha-ws-logo.png](pebble-ha-ws-logo.png)
+![pebble-ha-ws-logo-banner.png](pebble-ha-ws-logo-banner.png)
 
 ## Features
 
-### Real-time Home Assistant Integration
-- **WebSocket Connection**: Live updates and faster response times compared to REST API
-- **Two-way Communication**: Send commands and receive instant status updates
-- **Reliable Connection**: Automatic reconnection if connection is lost
+- **Voice Assistant** — Control your smart home using natural voice commands with support for multiple conversation agents (Assist, ChatGPT, and more)
+- **Browse by Floor & Area** — Easily find entities organized by their assigned floors and areas
+- **Browse by Label** — Filter and view entities by their Home Assistant labels
+- **Favorites** — Mark frequently used entities for quick access
+- **Pin to Main Menu** — Pin your most important entities directly to the main menu
+- **Live Updates** — Entity states update instantly in real-time via WebSocket connection
 
-### Voice Control
-- **Dictation Interface**: Control your smart home with voice commands
-- **Multiple Conversation Agents**: Support for any conversation agents configured in Home Assistant (ChatGPT, Assist, Home Assistant, etc.)
-- **Custom Agent Selection**: Easily switch between different conversation agents
-- **Scrollable Responses**: Review longer assistant responses with built-in scrolling
+Support
+-------
 
-### Entity Management
-- **Entity Browsing**: View and control all your entities
-- **Area Organization**: Browse entities by room/area for easier navigation
-- **Domain Filtering**: Filter entities by type (lights, switches, etc.)
-- **Favorites**: Save frequently used entities for quick access
-- **Pagination**: Efficiently navigate through large numbers of entities
+If Home Assistant WS has been useful to you, consider supporting its development.
+All of my projects are fully open-source and free — donations help cover time, tools, and ongoing maintenance.
 
-### UI Features
-- **Detailed Entity Info**: View all attributes and states
-- **Media Controls**: Dedicated interface for controlling media players
-- **Real-time Updates**: Entity states update instantly as they change
-- **Accessible Interface**: Optimized for the small Pebble screen
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/B0B51BM7C)
+[![Donate with PayPal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/donate/?hosted_button_id=4VS2UQWDUALXA)
+
 
 ## Installation
 

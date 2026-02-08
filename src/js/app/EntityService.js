@@ -5,10 +5,6 @@ var Settings = require('settings');
 var Vibe = require('ui/vibe');
 var AppState = require('app/AppState');
 var helpers = require('app/helpers');
-var GenericEntityPage = require('app/pages/entity/GenericEntityPage');
-var LightPage = require('app/pages/entity/LightPage');
-var ClimatePage = require('app/pages/entity/ClimatePage');
-var MediaPlayerPage = require('app/pages/entity/MediaPlayerPage');
 
 var EntityService = {
     /**
@@ -189,20 +185,20 @@ var EntityService = {
 
         var domain = entity_id.split('.')[0];
 
-        // These will be replaced with proper page class imports later
-        // For now, we call the global functions
+        // Lazy-load page modules to avoid circular dependency
+        // (page modules import EntityService, so top-level require would cause a cycle)
         switch (domain) {
             case 'media_player':
-                MediaPlayerPage.showMediaPlayerEntity(entity_id);
+                require('app/pages/entity/MediaPlayerPage').showMediaPlayerEntity(entity_id);
                 break;
             case 'light':
-                LightPage.showLightEntity(entity_id);
+                require('app/pages/entity/LightPage').showLightEntity(entity_id);
                 break;
             case 'climate':
-                ClimatePage.showClimateEntity(entity_id);
+                require('app/pages/entity/ClimatePage').showClimateEntity(entity_id);
                 break;
             default:
-                GenericEntityPage.showEntityMenu(entity_id);
+                require('app/pages/entity/GenericEntityPage').showEntityMenu(entity_id);
                 break;
         }
     },
