@@ -28,10 +28,14 @@ class FavoritesPage extends BasePage {
                 }
             );
 
+            var favoriteProvider = function() {
+                return appState.favoriteEntityStore.all();
+            };
+
             if (shouldShowDomains) {
                 EntityListPage.showEntityDomainsFromList(favoriteEntities, "Favorites");
             } else {
-                EntityListPage.showEntityList("Favorites", favoriteEntities, true, false, true);
+                EntityListPage.showEntityList("Favorites", favoriteEntities, true, false, true, favoriteProvider);
             }
         } else {
             var noFavoritesCard = new UI.Card({

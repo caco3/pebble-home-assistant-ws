@@ -17,6 +17,7 @@ class EntityListPage extends BasePage {
         super();
         this.title = title || "Entities";
         this.entityIdList = entityIdList || false;
+        this.entityIdListProvider = options && options.entityIdListProvider ? options.entityIdListProvider : null;
         this.ignoreEntityCache = options && options.ignoreEntityCache !== undefined ? options.ignoreEntityCache : true;
         this.sortItems = options && options.sortItems !== undefined ? options.sortItems : true;
         this.skipIgnoredDomains = options && options.skipIgnoredDomains !== undefined ? options.skipIgnoredDomains : false;
@@ -86,6 +87,11 @@ class EntityListPage extends BasePage {
 
         if (!pageNumber) {
             pageNumber = 1;
+        }
+
+        // Refresh entity list from provider if available
+        if (this.entityIdListProvider) {
+            this.entityIdList = this.entityIdListProvider();
         }
 
         // Unsubscribe from previous subscription
@@ -487,12 +493,14 @@ function showEntityDomainsFromList(entityIdList, title) {
  * @param {boolean} ignoreEntityCache - Whether to ignore entity cache
  * @param {boolean} sortItems - Whether to sort items
  * @param {boolean} skipIgnoredDomains - Whether to skip ignored domains
+ * @param {Function} [entityIdListProvider] - Optional function that returns fresh entity IDs on each show
  */
-function showEntityList(title, entityIdList, ignoreEntityCache, sortItems, skipIgnoredDomains) {
+function showEntityList(title, entityIdList, ignoreEntityCache, sortItems, skipIgnoredDomains, entityIdListProvider) {
     var page = new EntityListPage(title, entityIdList, {
         ignoreEntityCache: ignoreEntityCache !== undefined ? ignoreEntityCache : true,
         sortItems: sortItems !== undefined ? sortItems : true,
-        skipIgnoredDomains: skipIgnoredDomains !== undefined ? skipIgnoredDomains : false
+        skipIgnoredDomains: skipIgnoredDomains !== undefined ? skipIgnoredDomains : false,
+        entityIdListProvider: entityIdListProvider || null
     });
     page.show();
 }
