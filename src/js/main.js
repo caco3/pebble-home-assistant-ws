@@ -8,6 +8,7 @@
 
 var safe = require('safe');
 var util2 = require('util2');
+require('vendor/event-target-polyfill');
 
 Pebble.addEventListener('ready', function(e) {
   // Initialize the Pebble protocol
