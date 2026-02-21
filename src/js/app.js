@@ -191,7 +191,7 @@ function on_auth_ok(evt) {
         checkAllLoaded();
     }, true);
 
-    appState.haws.getAreaRegistry(function(data) {
+    appState.haws.getConfigAreas(function(data) {
         appState.area_registry_cache = {};
         if (data.result) {
             for (var i = 0; i < data.result.length; i++) {
@@ -203,7 +203,7 @@ function on_auth_ok(evt) {
         checkAllLoaded();
     }, function() { loaded.areas = true; checkAllLoaded(); });
 
-    appState.haws.getFloorRegistry(function(data) {
+    appState.haws.getConfigFloors(function(data) {
         appState.floor_registry_cache = {};
         if (data.result) {
             for (var i = 0; i < data.result.length; i++) {
@@ -215,7 +215,7 @@ function on_auth_ok(evt) {
         checkAllLoaded();
     }, function() { loaded.floors = true; checkAllLoaded(); });
 
-    appState.haws.getDeviceRegistry(function(data) {
+    appState.haws.getConfigDevices(function(data) {
         appState.device_registry_cache = {};
         if (data.result) {
             for (var i = 0; i < data.result.length; i++) {
@@ -227,7 +227,7 @@ function on_auth_ok(evt) {
         checkAllLoaded();
     }, function() { loaded.devices = true; checkAllLoaded(); });
 
-    appState.haws.getEntityRegistry(function(data) {
+    appState.haws.getConfigEntities(function(data) {
         appState.entity_registry_cache = {};
         if (data.result) {
             for (var i = 0; i < data.result.length; i++) {
@@ -239,7 +239,7 @@ function on_auth_ok(evt) {
         checkAllLoaded();
     }, function() { loaded.entities = true; checkAllLoaded(); });
 
-    appState.haws.getLabelRegistry(function(data) {
+    appState.haws.getConfigLabels(function(data) {
         appState.label_registry_cache = {};
         if (data.result) {
             for (var i = 0; i < data.result.length; i++) {
