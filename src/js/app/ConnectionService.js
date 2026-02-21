@@ -2,7 +2,6 @@
  * ConnectionService - Handles Home Assistant WebSocket connection lifecycle
  */
 var WindowStack = require('ui/windowstack');
-var Settings = require('settings');
 var HAWS = require('vendor/haws');
 
 var AppState = require('app/AppState');
@@ -19,8 +18,11 @@ var ConnectionService = {
     // Flag to track if app is restarting
     isRestarting: false,
 
-    // Saved windows for reconnection
-    savedWindows: null,
+    // Prevent duplicate back handlers on repeated reconnect attempts
+    backHandlerAttached: false,
+    // Track whether we're reconnecting from an active session
+    reconnecting: false,
+    hadWindowsBeforeDisconnect: false,
 
     /**
      * Initialize the connection service
@@ -31,6 +33,9 @@ var ConnectionService = {
     init: function(options) {
         this.loadingCard = options.loadingCard;
         this.onAuthOk = options.onAuthOk;
+        this.backHandlerAttached = false;
+        this.reconnecting = false;
+        this.hadWindowsBeforeDisconnect = false;
     },
 
     /**
@@ -46,6 +51,8 @@ var ConnectionService = {
 
         // Set flag to skip quick launch behavior
         this.isRestarting = true;
+        this.reconnecting = false;
+        this.hadWindowsBeforeDisconnect = false;
 
         // Disconnect HAWS if connected
         if (appState.haws && appState.haws.isConnected()) {
@@ -67,9 +74,6 @@ var ConnectionService = {
         for (var j = 0; j < windowsToRemove.length; j++) {
             windowsToRemove[j].hide();
         }
-
-        // Clear saved windows
-        this.savedWindows = null;
 
         // Reset state variables in AppState
         appState.ha_state_cache = null;
@@ -172,28 +176,19 @@ var ConnectionService = {
             return;
         }
 
-        this.loadingCard.subtitle('Reconnecting...');
+        this.loadingCard.subtitle('Reconnecting');
         this.loadingCard.show();
-
-        // Require multiple back button presses to exit
-        var backButtonPresses = 0;
-        var pressesRequiredToExit = 3;
-        this.loadingCard.on('click', 'back', function(e) {
-            backButtonPresses++;
-            if (backButtonPresses >= pressesRequiredToExit) {
-                self.loadingCard.subtitle('Press again to exit');
-                return false;
-            }
-            return true;
+        this.reconnecting = true;
+        this.hadWindowsBeforeDisconnect = WindowStack._items.some(function(window) {
+            return window._id() !== self.loadingCard._id();
         });
 
-        // Save current windows and hide them
-        this.savedWindows = WindowStack._items.slice();
-        for (var i = 0; i < WindowStack._items.length; i++) {
-            var window = WindowStack._items[i];
-            if (window._id() !== this.loadingCard._id()) {
-                window.hide();
-            }
+        if (!this.backHandlerAttached) {
+            this.backHandlerAttached = true;
+            this.loadingCard.on('click', 'back', function(e) {
+                self.loadingCard.subtitle('Hold back to exit');
+                return true;
+            });
         }
     },
 
@@ -211,18 +206,13 @@ var ConnectionService = {
         this.isRestarting = value;
     },
 
-    /**
-     * Get saved windows
-     */
-    getSavedWindows: function() {
-        return this.savedWindows;
+    shouldResumePreviousPage: function() {
+        return this.reconnecting && this.hadWindowsBeforeDisconnect && !this.isRestarting;
     },
 
-    /**
-     * Clear saved windows
-     */
-    clearSavedWindows: function() {
-        this.savedWindows = null;
+    clearReconnectState: function() {
+        this.reconnecting = false;
+        this.hadWindowsBeforeDisconnect = false;
     }
 };
 

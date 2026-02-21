@@ -117,6 +117,12 @@ class MainMenuPage extends BasePage {
         }
     }
 
+    onSelection(e) {
+        if (typeof e.itemIndex === 'number' && e.itemIndex >= 0) {
+            this.appState.menuSelections.mainMenu = e.itemIndex;
+        }
+    }
+
     onLongSelect(e) {
         if (e.item && e.item.entity_id) {
             EntityService.handleLongPress(e.item.entity_id);

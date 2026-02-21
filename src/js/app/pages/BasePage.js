@@ -80,6 +80,10 @@ class BasePage {
             this.menu.on('longSelect', function(e) {
                 self.onLongSelect(e);
             });
+
+            this.menu.on('selection', function(e) {
+                self.onSelection(e);
+            });
         }
     }
 
@@ -121,6 +125,14 @@ class BasePage {
      * @param {Object} e - Event object
      */
     onLongSelect(e) {
+        // Override in subclass
+    }
+
+    /**
+     * Called when menu highlight/selection changes - override in subclass
+     * @param {Object} e - Event object with itemIndex and sectionIndex
+     */
+    onSelection(e) {
         // Override in subclass
     }
 

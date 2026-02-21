@@ -9,7 +9,6 @@
 
 // === Core Imports ===
 var UI = require('ui');
-var WindowStack = require('ui/windowstack');
 var Settings = require('settings');
 var FavoriteEntityStore = require('vendor/FavoriteEntityStore');
 var PinnedEntityStore = require('vendor/PinnedEntityStore');
@@ -130,17 +129,18 @@ function on_auth_ok(evt) {
     }
 
     function showUIAfterAuth() {
-        var savedWindows = ConnectionService.getSavedWindows();
-        if (savedWindows) {
-            WindowStack._items = savedWindows.slice();
-            ConnectionService.clearSavedWindows();
-            loadingCard.hide();
-        } else if (ConnectionService.getIsRestarting()) {
+        if (ConnectionService.getIsRestarting()) {
             log('Skipping quick launch - app is restarting');
             ConnectionService.setIsRestarting(false);
+            ConnectionService.clearReconnectState();
             MainMenuPage.showMainMenu();
             loadingCard.hide();
+        } else if (ConnectionService.shouldResumePreviousPage()) {
+            log('Reconnect successful - resuming current page');
+            ConnectionService.clearReconnectState();
+            loadingCard.hide();
         } else {
+            ConnectionService.clearReconnectState();
             handleQuickLaunch();
         }
     }
@@ -256,15 +256,6 @@ function on_auth_ok(evt) {
         checkAllLoaded();
     });
 }
-
-// === Auto-refresh Timer ===
-var refreshInterval = appState.ha_refresh_interval || 15;
-setInterval(function() {
-    if (appState.haws && appState.haws.isConnected()) {
-        helpers.log_message('Auto-refreshing states');
-        StateService.getStates();
-    }
-}, 60000 * refreshInterval);
 
 // === Initialize Connection Service ===
 ConnectionService.init({
