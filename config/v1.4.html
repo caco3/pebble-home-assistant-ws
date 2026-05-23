@@ -468,6 +468,15 @@
 			flex: 1;
 			min-width: 0;
 			overflow: hidden;
+			display: flex;
+			align-items: center;
+			gap: 8px;
+		}
+
+		.list-group-item .entity-info i {
+			color: var(--color-text-muted);
+			width: 20px;
+			text-align: center;
 		}
 
 		.list-group-item .entity-name {
@@ -1689,14 +1698,14 @@
 
 			// Default menu items for the main menu order
 			const defaultMenuItems = [
-				{ id: 'assistant', name: 'Assistant' },
-				{ id: 'favorites', name: 'Favorites' },
-				{ id: 'areas', name: 'Areas' },
-				{ id: 'labels', name: 'Labels' },
-				{ id: 'todo_lists', name: 'To-Do Lists' },
-				{ id: 'people', name: 'People' },
-				{ id: 'all_entities', name: 'All Entities' },
-				{ id: 'settings', name: 'Settings' }
+				{ id: 'assistant', name: 'Assistant', icon: 'fa-microphone' },
+				{ id: 'favorites', name: 'Favorites', icon: 'fa-star' },
+				{ id: 'areas', name: 'Areas', icon: 'fa-map' },
+				{ id: 'labels', name: 'Labels', icon: 'fa-tag' },
+				{ id: 'todo_lists', name: 'To-Do Lists', icon: 'fa-list-check' },
+				{ id: 'people', name: 'People', icon: 'fa-users' },
+				{ id: 'all_entities', name: 'All Entities', icon: 'fa-home' },
+				{ id: 'settings', name: 'Settings', icon: 'fa-cog' }
 			];
 
 			// Build the main menu order list
@@ -1786,8 +1795,10 @@
 							<div class="entity-id">${item.entityId}</div>
 						</div>`;
 				} else {
+					let iconHtml = item.icon ? `<i class="fas ${item.icon}"></i>` : '';
 					displayHtml = `
 						<div class="entity-info">
+							${iconHtml}
 							<div class="entity-name">${item.name}</div>
 						</div>`;
 				}
