@@ -1969,7 +1969,18 @@
 				return entities;
 			} catch (error) {
 				console.error('Error fetching entities:', error);
-				alert('Failed to fetch entities from Home Assistant. Please check your connection settings.');
+				
+				// Check if this is a CORS error
+				if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
+					alert('CORS Error: The entity search feature requires CORS support.\n\n' +
+						'This feature works when:\n' +
+						'- Using the Android app config UI\n' +
+						'- Home Assistant is configured with CORS headers for this domain\n\n' +
+						'If you are using GitHub Pages, this feature may not work due to browser security restrictions.\n\n' +
+						'You can still pin entities from the watch menu.');
+				} else {
+					alert('Failed to fetch entities from Home Assistant. Please check your connection settings.\n\nError: ' + error.message);
+				}
 				return null;
 			}
 		}
