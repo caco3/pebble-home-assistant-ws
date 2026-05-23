@@ -175,14 +175,49 @@ var SettingsManager = {
     initConfigHandler: function(options) {
         var self = this;
         var log = helpers.log_message;
+        var AppState = require('app/AppState');
 
         log('Config URL: ' + options.configPageUrl);
+
+        // Prepare entity list for config UI (minimal data: entity_id + name)
+        var appState = AppState.getInstance();
+        var entityList = [];
+        
+        if (appState.ha_state_cache && Array.isArray(appState.ha_state_cache)) {
+            // Limit to 150 entities to stay within URL hash limits (~50 chars per entity)
+            var maxEntities = 150;
+            var entityCount = 0;
+            
+            for (var i = 0; i < appState.ha_state_cache.length && entityCount < maxEntities; i++) {
+                var entity = appState.ha_state_cache[i];
+                var entity_id = entity.entity_id;
+                var friendly_name = entity.attributes && entity.attributes.friendly_name 
+                    ? entity.attributes.friendly_name 
+                    : null;
+                
+                // Skip certain domains that are less useful for pinning
+                var skipDomains = ['assist_satellite', 'conversation', 'tts', 'stt', 'wake_word', 'tag', 'todo', 'update', 'zone', 'sensor', 'binary_sensor', 'automation'];
+                var domain = entity_id.split('.')[0];
+                if (skipDomains.indexOf(domain) !== -1) {
+                    continue;
+                }
+                
+                entityList.push({
+                    entity_id: entity_id,
+                    name: friendly_name || entity_id
+                });
+                entityCount++;
+            }
+            log('Prepared entity list for config UI: ' + entityList.length + ' entities');
+        }
 
         Settings.config({
             url: options.configPageUrl
         },
         function(e) {
             log('opened configurable');
+            // Add entity list to the config options
+            e.options.entity_list = entityList;
         },
         function(e) {
             log('closed configurable');
