@@ -1279,12 +1279,13 @@
 					let $item = $(b);
 					let entityId = $item.data('entity-id');
 					let friendlyName = $item.data('friendly-name');
-					// Save as object with entity_id and name (if available)
+					let iconColor = $item.data('icon-color') || 'none';
+					// Save as object with entity_id, name, and icon_color (if available)
 					if (friendlyName) {
-						return { entity_id: entityId, name: friendlyName };
+						return { entity_id: entityId, name: friendlyName, icon_color: iconColor };
 					} else {
 						// If no friendly name, still save as object for consistency
-						return { entity_id: entityId };
+						return { entity_id: entityId, icon_color: iconColor };
 					}
 				}).toArray(),
 				'ignore_domains': $("#ignore-domains-list li").map(function(a,b){
@@ -1549,10 +1550,18 @@
 							</div>`;
 					}
 
+					let iconColor = fav.icon_color || 'none';
 					html += `
-						<li class="list-group-item" data-entity-id="${entity_id}" data-friendly-name="${friendly_name || ''}">
+						<li class="list-group-item" data-entity-id="${entity_id}" data-friendly-name="${friendly_name || ''}" data-icon-color="${iconColor}">
 							<i class="fa fa-bars"></i>
 							${displayHtml}
+							<select class="form-select entity-color-select" style="width: auto; margin-left: auto;">
+								<option value="none" ${iconColor === 'none' ? 'selected' : ''}>None</option>
+								<option value="red" ${iconColor === 'red' ? 'selected' : ''}>Red</option>
+								<option value="blue" ${iconColor === 'blue' ? 'selected' : ''}>Blue</option>
+								<option value="green" ${iconColor === 'green' ? 'selected' : ''}>Green</option>
+								<option value="yellow" ${iconColor === 'yellow' ? 'selected' : ''}>Yellow</option>
+							</select>
 							<a href="javascript:void(0)" class="remove-favorite"><i class="fa fa-trash"></i></a>
 						</li>`;
 				}
@@ -1563,6 +1572,11 @@
 						});
 
 				favorites_sortable.disableSelection();
+
+				$(".entity-color-select").on('change', function(e) {
+					let parent = $(this).parent();
+					parent.data('icon-color', $(this).val());
+				});
 
 				$(".remove-favorite").on('click', function(e) {
 					e.preventDefault();

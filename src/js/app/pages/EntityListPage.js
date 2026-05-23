@@ -21,6 +21,7 @@ class EntityListPage extends BasePage {
         this.ignoreEntityCache = options && options.ignoreEntityCache !== undefined ? options.ignoreEntityCache : true;
         this.sortItems = options && options.sortItems !== undefined ? options.sortItems : true;
         this.skipIgnoredDomains = options && options.skipIgnoredDomains !== undefined ? options.skipIgnoredDomains : false;
+        this.usePerEntityColors = options && options.usePerEntityColors ? options.usePerEntityColors : false;
         this.subscriptionId = null;
         this.currentPage = null;
         this.relativeTimeUpdater = null;
@@ -143,11 +144,17 @@ class EntityListPage extends BasePage {
                 return;
             }
 
+            var iconColor = 'none';
+            if (self.usePerEntityColors) {
+                var appState = AppState.getInstance();
+                iconColor = appState.favoriteEntityStore.getIconColor(entity_id);
+            }
+
             self.menu.item(0, renderedEntityIds[entity_id], {
                 title: entity.attributes.friendly_name ? entity.attributes.friendly_name : entity.entity_id,
                 subtitle: entity.state + (entity.attributes.unit_of_measurement ? ' ' + entity.attributes.unit_of_measurement : '') + ' > ' + helpers.humanDiff(new Date(), new Date(entity.last_changed)),
                 entity_id: entity.entity_id,
-                icon: EntityService.getIcon(entity)
+                icon: EntityService.getIcon(entity, iconColor)
             });
         }
 
@@ -265,8 +272,13 @@ class EntityListPage extends BasePage {
 
                     // Get icon path
                     var itemIcon;
+                    var iconColor = 'none';
+                    if (self.usePerEntityColors) {
+                        var appState = AppState.getInstance();
+                        iconColor = appState.favoriteEntityStore.getIconColor(data[j].entity_id);
+                    }
                     try {
-                        itemIcon = EntityService.getIcon(data[j]);
+                        itemIcon = EntityService.getIcon(data[j], iconColor);
                     } catch (iconErr) {
                         helpers.log_message('renderMenu: icon error for ' + data[j].entity_id + ': ' + iconErr.message);
                         itemIcon = 'images/icon_unknown.png';
@@ -313,11 +325,17 @@ class EntityListPage extends BasePage {
                 return;
             }
 
+            var iconColor = 'none';
+            if (self.usePerEntityColors) {
+                var appState = AppState.getInstance();
+                iconColor = appState.favoriteEntityStore.getIconColor(entity_id);
+            }
+
             self.menu.item(0, renderedEntityIds[entity_id], {
                 title: entity.attributes.friendly_name ? entity.attributes.friendly_name : entity.entity_id,
                 subtitle: entity.state + (entity.attributes.unit_of_measurement ? ' ' + entity.attributes.unit_of_measurement : '') + ' > ' + helpers.humanDiff(new Date(), new Date(entity.last_changed)),
                 entity_id: entity.entity_id,
-                icon: EntityService.getIcon(entity)
+                icon: EntityService.getIcon(entity, iconColor)
             });
 
             // Update the relative time timer
@@ -403,8 +421,10 @@ class EntityListPage extends BasePage {
  * Show entity domains list from a list of entity IDs
  * @param {string[]} entityIdList - List of entity IDs
  * @param {string} title - Menu title
+ * @param {string} [iconColor] - Optional color theme ('none', 'red', 'blue', 'green', 'yellow') - deprecated
+ * @param {boolean} [usePerEntityColors] - Whether to use per-entity colors from favorites store
  */
-function showEntityDomainsFromList(entityIdList, title) {
+function showEntityDomainsFromList(entityIdList, title, iconColor, usePerEntityColors) {
     var appState = AppState.getInstance();
 
     var domainListMenu = new UI.Menu({
@@ -469,7 +489,7 @@ function showEntityDomainsFromList(entityIdList, title) {
                     subtitle: entities.length + ' ' + (entities.length > 1 ? 'entities' : 'entity'),
                     on_click: function(e) {
                         helpers.log_message('showEntityDomainsFromList: clicked domain \'' + dom + '\' with ' + entities.length + ' entities');
-                        showEntityList(displayName, entities);
+                        showEntityList(displayName, entities, true, true, true, null, null, usePerEntityColors);
                     }
                 });
             })(domainName, domainEntities[domainName]);
@@ -494,13 +514,16 @@ function showEntityDomainsFromList(entityIdList, title) {
  * @param {boolean} sortItems - Whether to sort items
  * @param {boolean} skipIgnoredDomains - Whether to skip ignored domains
  * @param {Function} [entityIdListProvider] - Optional function that returns fresh entity IDs on each show
+ * @param {string} [iconColor] - Optional color theme ('none', 'red', 'blue', 'green', 'yellow') - deprecated
+ * @param {boolean} [usePerEntityColors] - Whether to use per-entity colors from favorites store
  */
-function showEntityList(title, entityIdList, ignoreEntityCache, sortItems, skipIgnoredDomains, entityIdListProvider) {
+function showEntityList(title, entityIdList, ignoreEntityCache, sortItems, skipIgnoredDomains, entityIdListProvider, iconColor, usePerEntityColors) {
     var page = new EntityListPage(title, entityIdList, {
         ignoreEntityCache: ignoreEntityCache !== undefined ? ignoreEntityCache : true,
         sortItems: sortItems !== undefined ? sortItems : true,
         skipIgnoredDomains: skipIgnoredDomains !== undefined ? skipIgnoredDomains : false,
-        entityIdListProvider: entityIdListProvider || null
+        entityIdListProvider: entityIdListProvider || null,
+        usePerEntityColors: usePerEntityColors || false
     });
     page.show();
 }

@@ -33,9 +33,9 @@ class FavoritesPage extends BasePage {
             };
 
             if (shouldShowDomains) {
-                EntityListPage.showEntityDomainsFromList(favoriteEntities, "Favorites");
+                EntityListPage.showEntityDomainsFromList(favoriteEntities, "Favorites", null, true);
             } else {
-                EntityListPage.showEntityList("Favorites", favoriteEntities, true, false, true, favoriteProvider);
+                EntityListPage.showEntityList("Favorites", favoriteEntities, true, false, true, favoriteProvider, null, true);
             }
         } else {
             var noFavoritesCard = new UI.Card({

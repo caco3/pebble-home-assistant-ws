@@ -75,10 +75,36 @@ class FavoriteEntityStore {
 
     /**
      * Get all favorites with full data (entity_id and name)
-     * @returns {Array<{entity_id: string, name?: string}>}
+     * @returns {Array<{entity_id: string, name?: string, icon_color?: string}>}
      */
     allWithNames() {
         return this.favoriteEntities;
+    }
+
+    /**
+     * Get icon color for a specific entity
+     * @param {string} id - The entity_id
+     * @returns {string} Icon color ('none', 'red', 'blue', 'green', 'yellow')
+     */
+    getIconColor(id) {
+        let index = this._findIndex(id);
+        if (index > -1) {
+            return this.favoriteEntities[index].icon_color || 'none';
+        }
+        return 'none';
+    }
+
+    /**
+     * Set icon color for a specific entity
+     * @param {string} id - The entity_id
+     * @param {string} color - Icon color ('none', 'red', 'blue', 'green', 'yellow')
+     */
+    setIconColor(id, color) {
+        let index = this._findIndex(id);
+        if (index > -1) {
+            this.favoriteEntities[index].icon_color = color;
+            this.save();
+        }
     }
 
     /**
