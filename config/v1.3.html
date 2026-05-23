@@ -1941,53 +1941,19 @@
 			conditionalSettings.toggle(showConditional);
 		});
 
-		// Pinned entity search functionality using direct fetch from Home Assistant
+		// Pinned entity search functionality using entity_list from watch app
 		let allEntitiesCache = null;
 
-		function fetchEntitiesFromHA() {
-			const haUrl = urlInput.val().replace(/\/+$/, '');
-			const token = tokenInput.val();
-
-			if (!haUrl || !token) {
-				alert('Please configure your Home Assistant URL and token first.');
+		function loadEntitiesFromConfig() {
+			// Entity list is passed from watch app via watch_config.entity_list
+			// Format: [{entity_id: "light.living_room", name: "Living Room"}, ...]
+			if (watch_config && watch_config.entity_list && Array.isArray(watch_config.entity_list)) {
+				console.log('Loaded', watch_config.entity_list.length, 'entities from watch config');
+				return watch_config.entity_list;
+			} else {
+				console.log('No entity_list found in watch config');
 				return null;
 			}
-
-			console.log('Fetching entities from:', haUrl);
-
-			return new Promise(function(resolve, reject) {
-				const xhr = new XMLHttpRequest();
-				xhr.open('GET', haUrl + '/api/states', true);
-				xhr.setRequestHeader('Authorization', 'Bearer ' + token);
-				xhr.setRequestHeader('Content-Type', 'application/json');
-
-				xhr.onload = function() {
-					if (xhr.status >= 200 && xhr.status < 300) {
-						console.log('Fetched entities successfully');
-						try {
-							const entities = JSON.parse(xhr.responseText);
-							console.log('Parsed', entities.length, 'entities');
-							resolve(entities);
-						} catch (e) {
-							console.error('Error parsing JSON:', e);
-							alert('Error parsing entity data from Home Assistant.');
-							resolve(null);
-						}
-					} else {
-						console.error('HTTP error:', xhr.status);
-						alert('Failed to fetch entities. HTTP Status: ' + xhr.status);
-						resolve(null);
-					}
-				};
-
-				xhr.onerror = function() {
-					console.error('Network error while fetching entities');
-					alert('Network error: Failed to connect to Home Assistant.\n\nPlease check:\n- Home Assistant URL is correct\n- Home Assistant is accessible\n- Network connection is working');
-					resolve(null);
-				};
-
-				xhr.send();
-			});
 		}
 
 		function filterEntities(entities, searchTerm) {
@@ -2145,27 +2111,30 @@
 		}
 
 		// Search button click handler
-		pinnedSearchBtn.on('click', async function() {
+		pinnedSearchBtn.on('click', function() {
 			const searchTerm = pinnedSearchInput.val();
 			if (!searchTerm || searchTerm.trim() === '') {
 				pinnedSearchResults.hide();
 				return;
 			}
 
-			pinnedSearchBtn.prop('disabled', true).html('<span class="test-btn-loading"><i class="fa fa-spinner fa-spin"></i></span><span class="btn-text">Search</span>');
+			// Load entities from config if not already cached
+			if (!allEntitiesCache) {
+				allEntitiesCache = loadEntitiesFromConfig();
+			}
 
-			try {
-				// Fetch entities from Home Assistant if not already cached
-				if (!allEntitiesCache) {
-					allEntitiesCache = await fetchEntitiesFromHA();
-				}
-
-				if (allEntitiesCache) {
-					const filtered = filterEntities(allEntitiesCache, searchTerm);
-					displaySearchResults(filtered);
-				}
-			} finally {
-				pinnedSearchBtn.prop('disabled', false).html('<span class="test-btn-loading"><i class="fa fa-spinner fa-spin"></i></span><span class="btn-text">Search</span>');
+			if (allEntitiesCache) {
+				const filtered = filterEntities(allEntitiesCache, searchTerm);
+				displaySearchResults(filtered);
+			} else {
+				pinnedSearchResultsList.html(`
+					<li class="list-group-item" style="justify-content: center;">
+						<div class="entity-info" style="text-align: center; color: var(--color-text-muted);">
+							No entity data available. Please open the watch app first to fetch entities.
+						</div>
+					</li>
+				`);
+				pinnedSearchResults.show();
 			}
 		});
 
