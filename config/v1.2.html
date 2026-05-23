@@ -875,16 +875,6 @@
 						<small class="form-text">Action when long-pressing an automation</small>
 					</div>
 				</div>
-				<div class="component">
-					<div class="form-group">
-						<label class="form-label" for="ha-entity-press-behaviour">Entity Press</label>
-						<select class="form-select" id="ha-entity-press-behaviour">
-							<option value="false">Press=Show Details, Long-Press=Trigger Action</option>
-							<option value="true">Press=Trigger Action, Long-Press=Show Details</option>
-						</select>
-						<small class="form-text">Behavior for pressing/long pressing entities in favorites and pinned in main menu</small>
-					</div>
-				</div>
 			</div>
 		</div>
 
@@ -1232,7 +1222,6 @@
 				unavailableHandling = $('#ha-unavailable-handling'),
 				unknownHandling = $('#ha-unknown-handling'),
 				automationLongpress = $('#ha-automation-longpress'),
-				entityPressBehavior = $('#ha-entity-press-behaviour'),
 				mainMenuCustomOrderEnabled = $('#main-menu-custom-order-enabled'),
 				mainMenuOrderContainer = $('#main-menu-order-container'),
 				mainMenuSortable = $('#main-menu-sortable'),
@@ -1306,8 +1295,6 @@
 				'unknown_entity_handling': unknownHandling.val(),
 				// Automation long-press action
 				'automation_longpress_action': automationLongpress.val(),
-				// Entity press behavior
-				'entity_press_behavior': entityPressBehavior.val() === 'true',
 				// Main menu order settings
 				'main_menu_custom_order_enabled': mainMenuCustomOrderEnabled.is(':checked'),
 				'main_menu_order': $("#main-menu-sortable li").map(function(a,b){
@@ -1532,13 +1519,6 @@
 				automationLongpress.val(watch_config['automation_longpress_action']);
 			} else {
 				automationLongpress.val('toggle'); // Default
-			}
-
-			// Handle entity press behavior
-			if (watch_config['entity_press_behavior'] !== undefined) {
-				entityPressBehavior.val(watch_config['entity_press_behavior'] ? 'true' : 'false');
-			} else {
-				entityPressBehavior.val('false'); // Default
 			}
 
 			if(watch_config['favorite_entities']) {
