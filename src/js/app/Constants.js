@@ -6,8 +6,8 @@ const Feature = require('platform/feature');
 const Constants = {
     // App versioning
     appVersion: '2.0',
-    confVersion: '1.2',
-    configPageUrl: 'https://caco3.github.io/pebble-home-assistant-ws/config/v1.2.html',
+    confVersion: '1.3',
+    configPageUrl: 'https://caco3.github.io/pebble-home-assistant-ws/config/v1.3.html',
 
     // Debug settings
     debugMode: true,
