@@ -1953,6 +1953,8 @@
 				return null;
 			}
 
+			console.log('Fetching entities from:', haUrl);
+
 			try {
 				const response = await fetch(`${haUrl}/api/states`, {
 					headers: {
@@ -1961,26 +1963,31 @@
 					}
 				});
 
+				console.log('Response status:', response.status);
+				console.log('Response ok:', response.ok);
+
 				if (!response.ok) {
 					throw new Error(`HTTP error! status: ${response.status}`);
 				}
 
 				const entities = await response.json();
+				console.log('Fetched', entities.length, 'entities');
 				return entities;
 			} catch (error) {
 				console.error('Error fetching entities:', error);
+				console.error('Error name:', error.name);
+				console.error('Error message:', error.message);
 				
-				// Check if this is a CORS error
-				if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
-					alert('CORS Error: The entity search feature requires CORS support.\n\n' +
-						'This feature works when:\n' +
-						'- Using the Android app config UI\n' +
-						'- Home Assistant is configured with CORS headers for this domain\n\n' +
-						'If you are using GitHub Pages, this feature may not work due to browser security restrictions.\n\n' +
-						'You can still pin entities from the watch menu.');
-				} else {
-					alert('Failed to fetch entities from Home Assistant. Please check your connection settings.\n\nError: ' + error.message);
-				}
+				let errorMessage = 'Failed to fetch entities from Home Assistant.\n\n';
+				errorMessage += 'Error: ' + error.message + '\n';
+				errorMessage += 'Type: ' + error.name + '\n\n';
+				errorMessage += 'Please check:\n';
+				errorMessage += '- Home Assistant URL is correct\n';
+				errorMessage += '- Access token is valid\n';
+				errorMessage += '- Home Assistant is accessible\n';
+				errorMessage += '- Network connection is working';
+				
+				alert(errorMessage);
 				return null;
 			}
 		}
