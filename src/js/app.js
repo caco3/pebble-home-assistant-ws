@@ -122,7 +122,7 @@ function on_auth_ok(evt) {
                     var personEntities = Object.keys(appState.ha_state_dict).filter(function(id) {
                         return id.startsWith('person.');
                     });
-                    EntityListPage.showEntityList("People", personEntities, true, true, true);
+                    EntityListPage.showEntityList("People", personEntities, true, true, true, null, false);
                     break;
             }
         }

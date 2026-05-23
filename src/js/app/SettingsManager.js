@@ -101,9 +101,16 @@ var SettingsManager = {
             ? appState.automation_longpress_action
             : 'toggle';
 
+        // Entity press behavior setting
+        appState.entity_press_behavior = Settings.option('entity_press_behavior');
+        appState.entity_press_behavior = appState.entity_press_behavior !== undefined
+            ? appState.entity_press_behavior
+            : false;
+
         log('Entity handling - unavailable: ' + appState.unavailable_entity_handling +
             ', unknown: ' + appState.unknown_entity_handling);
         log('Automation long-press action: ' + appState.automation_longpress_action);
+        log('Entity press behavior: ' + appState.entity_press_behavior);
 
         // Main menu ordering settings
         appState.main_menu_custom_order_enabled = Settings.option('main_menu_custom_order_enabled') === true;
@@ -168,6 +175,8 @@ var SettingsManager = {
     initConfigHandler: function(options) {
         var self = this;
         var log = helpers.log_message;
+
+        log('Config URL: ' + options.configPageUrl);
 
         Settings.config({
             url: options.configPageUrl

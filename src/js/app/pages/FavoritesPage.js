@@ -32,10 +32,12 @@ class FavoritesPage extends BasePage {
                 return appState.favoriteEntityStore.all();
             };
 
+            var entityPressBehavior = appState.entity_press_behavior !== false;
+
             if (shouldShowDomains) {
-                EntityListPage.showEntityDomainsFromList(favoriteEntities, "Favorites");
+                EntityListPage.showEntityDomainsFromList(favoriteEntities, "Favorites", entityPressBehavior);
             } else {
-                EntityListPage.showEntityList("Favorites", favoriteEntities, true, false, true, favoriteProvider);
+                EntityListPage.showEntityList("Favorites", favoriteEntities, true, false, true, favoriteProvider, entityPressBehavior);
             }
         } else {
             var noFavoritesCard = new UI.Card({
