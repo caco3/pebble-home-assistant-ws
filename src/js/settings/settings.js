@@ -167,6 +167,7 @@ Settings.onOpenConfig = function(e) {
   if (listener.params.hash !== false) {
     url += '#' + encodeURIComponent(JSON.stringify(options));
   }
+  console.log('Opening config URL: ' + url);
   Pebble.openURL(url);
 };
 
@@ -183,6 +184,7 @@ Settings.onCloseConfig = function(e) {
   var options = {};
   var format;
   if (e.response) {
+    console.log('Config response: ' + e.response);
     options = parseJson(decodeURIComponent(e.response));
     if (typeof options === 'object' && options !== null) {
       format = 'json';
@@ -208,6 +210,7 @@ Settings.onCloseConfig = function(e) {
       e.originalOptions = util2.copy(state.options);
       util2.copy(options, state.options);
       Settings._saveOptions();
+      console.log('Config saved. New options: ' + JSON.stringify(state.options));
     }
     if (listener.close) {
       return listener.close(e);
