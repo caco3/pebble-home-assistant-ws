@@ -237,7 +237,7 @@ class FavoritesPage extends BasePage {
     }
 
     this._scrollOffset = Math.max(0, this._selectedIndex - (this._visibleCount - 1)) * 44;
-    this._applyScroll(this._scrollOffset);
+    this._applyScroll(this._scrollOffset, true);
     this._updateSelection();
   }
 
@@ -339,7 +339,7 @@ class FavoritesPage extends BasePage {
     item.subtitle = state + (unit ? ' ' + unit : '') + ' > ' + helpers.humanDiff(new Date(), new Date(lastChanged));
 
     this._elements[index].title.text(item.title);
-    this._elements[index].subtitle.text(item.subtitle);
+    this._elements[index].subtitle.text(index === this._selectedIndex ? item.subtitle : '');
 
     var iconImage = EntityService.getIcon(entity);
     if (iconImage !== item.icon) {
@@ -365,25 +365,40 @@ class FavoritesPage extends BasePage {
     }
   }
 
-  _applyScroll(offset) {
-    for (var i = 0; i < this._rows.length; i++) {
+  _applyScroll(offset, all, oldOffset) {
+    var start, end;
+    if (all) {
+      start = 0;
+      end = this._rows.length - 1;
+    } else {
+      start = Math.max(0, Math.floor(offset / 44) - 1);
+      end = Math.min(this._rows.length - 1, start + this._visibleCount + 1);
+      if (oldOffset !== undefined) {
+        var oldStart = Math.max(0, Math.floor(oldOffset / 44) - 1);
+        var oldEnd = Math.min(this._rows.length - 1, oldStart + this._visibleCount + 1);
+        start = Math.min(start, oldStart);
+        end = Math.max(end, oldEnd);
+      }
+    }
+    for (var i = start; i <= end; i++) {
       var item = this._rows[i];
-      var baseY = item.baseY;
       var el = this._elements[i];
       if (!el) { continue; }
       var selected = (i === this._selectedIndex);
+      var baseY = item.baseY - offset;
       var titleY = item.is_main_menu
-        ? baseY + 5 - offset
-        : baseY + (selected ? -4 : 4) - offset;
-      el.highlight.position(new UI.Vector2(0, baseY - offset));
-      el.border.position(new UI.Vector2(2, baseY + 5 - offset));
-      if (el.icon) { el.icon.position(new UI.Vector2(3, baseY + 10 - offset)); }
+        ? baseY + 5
+        : baseY + (selected ? -4 : 4);
+      el.highlight.position(new UI.Vector2(0, baseY));
+      el.border.position(new UI.Vector2(2, baseY + 5));
+      if (el.icon) { el.icon.position(new UI.Vector2(3, baseY + 10)); }
       el.title.position(new UI.Vector2(32, titleY));
-      el.subtitle.position(new UI.Vector2(32, baseY + 20 - offset));
+      el.subtitle.position(new UI.Vector2(32, baseY + 20));
     }
   }
 
   _moveSelection(delta) {
+    var oldIndex = this._selectedIndex;
     var next = this._selectedIndex + delta;
     if (next < 0) {
       next = this._rows.length - 1;
@@ -391,20 +406,50 @@ class FavoritesPage extends BasePage {
       next = 0;
     }
     this._selectedIndex = next;
-    this._scrollOffset = Math.max(0, this._selectedIndex - (this._visibleCount - 1)) * 44;
-    this._applyScroll(this._scrollOffset);
-    this._updateSelection();
+    var oldScroll = this._scrollOffset;
+    var newScroll = Math.max(0, this._selectedIndex - (this._visibleCount - 1)) * 44;
+    if (newScroll !== this._scrollOffset) {
+      this._scrollOffset = newScroll;
+      this._applyScroll(this._scrollOffset, false, oldScroll);
+    }
+    this._updateSelection(oldIndex);
     this.onSelection({ itemIndex: this._selectedIndex });
   }
 
-  _updateSelection() {
-    for (var i = 0; i < this._elements.length; i++) {
-      var selected = (i === this._selectedIndex);
-      var el = this._elements[i];
-      el.highlight.backgroundColor(selected ? 'white' : 'black');
-      el.title.color(selected ? 'black' : 'white');
-      el.subtitle.color(selected ? 'black' : 'white');
-      el.subtitle.text(selected ? this._rows[i].subtitle : '');
+  _updateSelection(oldIndex) {
+    if (oldIndex === undefined) {
+      for (var i = 0; i < this._elements.length; i++) {
+        var selected = (i === this._selectedIndex);
+        var el = this._elements[i];
+        if (!el) { continue; }
+        el.highlight.backgroundColor(selected ? 'white' : 'black');
+        el.title.color(selected ? 'black' : 'white');
+        el.subtitle.color(selected ? 'black' : 'white');
+        el.subtitle.text(selected ? this._rows[i].subtitle : '');
+      }
+    } else {
+      if (oldIndex >= 0 && oldIndex < this._elements.length) {
+        var oldEl = this._elements[oldIndex];
+        var oldItem = this._rows[oldIndex];
+        if (oldEl && oldItem) {
+          oldEl.highlight.backgroundColor('black');
+          oldEl.title.color('white');
+          oldEl.subtitle.color('white');
+          oldEl.subtitle.text('');
+          oldEl.title.position(new UI.Vector2(32, oldItem.baseY + (oldItem.is_main_menu ? 5 : 4) - this._scrollOffset));
+        }
+      }
+      if (this._selectedIndex >= 0 && this._selectedIndex < this._elements.length) {
+        var newEl = this._elements[this._selectedIndex];
+        var newItem = this._rows[this._selectedIndex];
+        if (newEl && newItem) {
+          newEl.highlight.backgroundColor('white');
+          newEl.title.color('black');
+          newEl.subtitle.color('black');
+          newEl.subtitle.text(newItem.subtitle);
+          newEl.title.position(new UI.Vector2(32, newItem.baseY + (newItem.is_main_menu ? 5 : -4) - this._scrollOffset));
+        }
+      }
     }
   }
 
