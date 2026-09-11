@@ -365,7 +365,7 @@ class FavoritesPage extends BasePage {
     }
   }
 
-  _applyScroll(offset, all) {
+  _applyScroll(offset, all, oldOffset) {
     var start, end;
     if (all) {
       start = 0;
@@ -373,6 +373,12 @@ class FavoritesPage extends BasePage {
     } else {
       start = Math.max(0, Math.floor(offset / 44) - 1);
       end = Math.min(this._rows.length - 1, start + this._visibleCount + 1);
+      if (oldOffset !== undefined) {
+        var oldStart = Math.max(0, Math.floor(oldOffset / 44) - 1);
+        var oldEnd = Math.min(this._rows.length - 1, oldStart + this._visibleCount + 1);
+        start = Math.min(start, oldStart);
+        end = Math.max(end, oldEnd);
+      }
     }
     for (var i = start; i <= end; i++) {
       var item = this._rows[i];
@@ -400,10 +406,11 @@ class FavoritesPage extends BasePage {
       next = 0;
     }
     this._selectedIndex = next;
+    var oldScroll = this._scrollOffset;
     var newScroll = Math.max(0, this._selectedIndex - (this._visibleCount - 1)) * 44;
     if (newScroll !== this._scrollOffset) {
       this._scrollOffset = newScroll;
-      this._applyScroll(this._scrollOffset);
+      this._applyScroll(this._scrollOffset, false, oldScroll);
     }
     this._updateSelection(oldIndex);
     this.onSelection({ itemIndex: this._selectedIndex });
