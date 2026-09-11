@@ -338,8 +338,11 @@ class FavoritesPage extends BasePage {
     item.title = friendlyName;
     item.subtitle = state + (unit ? ' ' + unit : '') + ' > ' + helpers.humanDiff(new Date(), new Date(lastChanged));
 
-    this._elements[index].title.text(item.title);
-    this._elements[index].subtitle.text(index === this._selectedIndex ? item.subtitle : '');
+    this._elements[index].title.prop({ text: item.title });
+    this._elements[index].subtitle.prop({
+      color: index === this._selectedIndex ? 'black' : 'white',
+      text: index === this._selectedIndex ? item.subtitle : ''
+    });
 
     var iconImage = EntityService.getIcon(entity);
     if (iconImage !== item.icon) {
@@ -422,32 +425,33 @@ class FavoritesPage extends BasePage {
         var selected = (i === this._selectedIndex);
         var el = this._elements[i];
         if (!el) { continue; }
-        el.highlight.backgroundColor(selected ? 'white' : 'black');
-        el.title.color(selected ? 'black' : 'white');
-        el.subtitle.color(selected ? 'black' : 'white');
-        el.subtitle.text(selected ? this._rows[i].subtitle : '');
+        el.highlight.prop({ backgroundColor: selected ? 'white' : 'black' });
+        el.title.prop({ color: selected ? 'black' : 'white' });
+        el.subtitle.prop({ color: selected ? 'black' : 'white', text: selected ? this._rows[i].subtitle : '' });
       }
     } else {
       if (oldIndex >= 0 && oldIndex < this._elements.length) {
         var oldEl = this._elements[oldIndex];
         var oldItem = this._rows[oldIndex];
         if (oldEl && oldItem) {
-          oldEl.highlight.backgroundColor('black');
-          oldEl.title.color('white');
-          oldEl.subtitle.color('white');
-          oldEl.subtitle.text('');
-          oldEl.title.position(new UI.Vector2(32, oldItem.baseY + (oldItem.is_main_menu ? 5 : 4) - this._scrollOffset));
+          oldEl.highlight.prop({ backgroundColor: 'black' });
+          oldEl.title.prop({
+            color: 'white',
+            position: new UI.Vector2(32, oldItem.baseY + (oldItem.is_main_menu ? 5 : 4) - this._scrollOffset)
+          });
+          oldEl.subtitle.prop({ color: 'white', text: '' });
         }
       }
       if (this._selectedIndex >= 0 && this._selectedIndex < this._elements.length) {
         var newEl = this._elements[this._selectedIndex];
         var newItem = this._rows[this._selectedIndex];
         if (newEl && newItem) {
-          newEl.highlight.backgroundColor('white');
-          newEl.title.color('black');
-          newEl.subtitle.color('black');
-          newEl.subtitle.text(newItem.subtitle);
-          newEl.title.position(new UI.Vector2(32, newItem.baseY + (newItem.is_main_menu ? 5 : -4) - this._scrollOffset));
+          newEl.highlight.prop({ backgroundColor: 'white' });
+          newEl.title.prop({
+            color: 'black',
+            position: new UI.Vector2(32, newItem.baseY + (newItem.is_main_menu ? 5 : -4) - this._scrollOffset)
+          });
+          newEl.subtitle.prop({ color: 'black', text: newItem.subtitle });
         }
       }
     }
